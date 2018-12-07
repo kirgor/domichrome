@@ -38,7 +38,7 @@ function setupControlInputs({
                 }
                 e.preventDefault()
                 break
-            case 'q':
+            case 'ArrowUp':
                 if (!rotatePressed) {
                     rotatePressed = true
                     well.rotate(false)
@@ -70,7 +70,7 @@ function setupControlInputs({
                 well.setSpeed(initialSpeed)
                 e.preventDefault()
                 break
-            case 'q':
+            case 'ArrowUp':
                 rotatePressed = false
                 e.preventDefault()
                 break
