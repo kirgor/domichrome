@@ -88,10 +88,6 @@ function game() {
         speed: FALLING_SPEED,
     })
 
-    well.setBlock(6, 6, BlockColor.BLUE)
-    well.setBlock(6, 7, BlockColor.RED)
-    well.setBlock(6, 8, BlockColor.YELLOW)
-
     setupControlInputs(well)
 
     scene.run((delta) => {

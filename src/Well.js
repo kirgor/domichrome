@@ -70,6 +70,8 @@ class Well {
     }
 
     startFallingPiece({
+        x = Math.floor(this._width / 2) - 1,
+        y = 0,
         color1 = Math.floor(Math.random() * 3) + 1,
         color2 = Math.floor(Math.random() * 3) + 1,
         speed = 0,
@@ -78,8 +80,6 @@ class Well {
             this._callbacks.onFallingPieceDisappear()
         }
 
-        const x = Math.floor(this._width / 2)
-        const y = 0
         if (this.getBlock(x, y) || this.getBlock(x + 1, y)) {
             this.clear()
         }
@@ -123,8 +123,9 @@ class Well {
         }
 
         for (let y = scanStartY; y <= scanStopY; y++) {
-            if (this.getBlock(scanX, y)) {
-                this._callbacks.onFallingPieceMoveRejected({...this._fallingPiece, right})
+            let color = this.getBlock(scanX, y)
+            if (color) {
+                this._callbacks.onFallingPieceMoveRejected({...this._fallingPiece, right, color})
                 return
             }
         }
@@ -138,44 +139,46 @@ class Well {
             return
         }
 
-        const rp = this._roundedFallingPiece()
-        const inc = clockwise ? 1 : -1
+        const fp = this._fallingPiece
 
-        if (rp.rotation === PieceRotation.RIGHT) {
-            if (this.getBlock(rp.x, rp.y) ||
-                this.getBlock(rp.x + 1, rp.y) ||
-                this.getBlock(rp.x + 1, rp.y + inc) ||
-                this.getBlock(rp.x, rp.y + inc)) {
-                this._callbacks.onFallingPieceRotateRejected({...this._fallingPiece, clockwise})
-                return
-            }
-        } else if (rp.rotation === PieceRotation.DOWN) {
-            if (this.getBlock(rp.x, rp.y) ||
-                this.getBlock(rp.x, rp.y + 1) ||
-                this.getBlock(rp.x - inc, rp.y + 1) ||
-                this.getBlock(rp.x - inc, rp.y)) {
-                this._callbacks.onFallingPieceRotateRejected({...this._fallingPiece, clockwise})
-                return
-            }
-        } else if (rp.rotation === PieceRotation.LEFT) {
-            if (this.getBlock(rp.x, rp.y) ||
-                this.getBlock(rp.x - 1, rp.y) ||
-                this.getBlock(rp.x - 1, rp.y - inc) ||
-                this.getBlock(rp.x, rp.y - inc)) {
-                this._callbacks.onFallingPieceRotateRejected({...this._fallingPiece, clockwise})
-                return
-            }
-        } else if (rp.rotation === PieceRotation.UP) {
-            if (this.getBlock(rp.x, rp.y) ||
-                this.getBlock(rp.x, rp.y - 1) ||
-                this.getBlock(rp.x + inc, rp.y - 1) ||
-                this.getBlock(rp.x + inc, rp.y)) {
-                this._callbacks.onFallingPieceRotateRejected({...this._fallingPiece, clockwise})
-                return
+        let scanStartX = fp.x
+        if (fp.rotation === PieceRotation.LEFT ||
+            fp.rotation === PieceRotation.DOWN && clockwise ||
+            fp.rotation === PieceRotation.UP && !clockwise) {
+            scanStartX--
+        } else if (fp.rotation === PieceRotation.DOWN || fp.rotation === PieceRotation.UP) {
+            scanStartX++
+        }
+        let scanStopX = fp.x
+        if (fp.rotation === PieceRotation.RIGHT) {
+            scanStopX++
+        } else if (fp.rotation === PieceRotation.DOWN || fp.rotation === PieceRotation.UP) {
+            scanStopX = scanStartX
+        }
+        let scanStartY = Math.floor(fp.y)
+        if (fp.rotation === PieceRotation.UP ||
+            fp.rotation === PieceRotation.LEFT && clockwise ||
+            fp.rotation === PieceRotation.RIGHT && !clockwise) {
+            scanStartY--
+        }
+        let scanStopY = Math.ceil(fp.y)
+        if (fp.rotation === PieceRotation.DOWN ||
+            fp.rotation === PieceRotation.LEFT && !clockwise ||
+            fp.rotation === PieceRotation.RIGHT && clockwise) {
+            scanStopY++
+        }
+
+        for (let x = scanStartX; x <= scanStopX; x++) {
+            for (let y = scanStartY; y <= scanStopY; y++) {
+                const color = this.getBlock(x, y)
+                if (color) {
+                    this._callbacks.onFallingPieceRotateRejected({...this._fallingPiece, clockwise, color})
+                    return
+                }
             }
         }
 
-        this._fallingPiece.rotation = (this._fallingPiece.rotation + inc + 4) % 4
+        this._fallingPiece.rotation = (this._fallingPiece.rotation + (clockwise ? 1 : -1) + 4) % 4
         this._callbacks.onFallingPieceRotateSuccess({...this._fallingPiece, clockwise})
     }
 
@@ -230,15 +233,6 @@ class Well {
 
             fp.y = targetY
             this._callbacks.onFallingPieceFall({...fp})
-        }
-    }
-
-    _roundedFallingPiece() {
-        const piece = this._fallingPiece
-        return {
-            ...piece,
-            x: Math.round(piece.x),
-            y: Math.round(piece.y),
         }
     }
 }
