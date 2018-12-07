@@ -57,3 +57,12 @@ function blockColorToHex(color) {
             return 0
     }
 }
+
+function rafLoop(callback) {
+    const loop = () => {
+        callback()
+        requestAnimationFrame(loop)
+    }
+
+    requestAnimationFrame(loop)
+}

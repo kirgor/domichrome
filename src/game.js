@@ -10,6 +10,9 @@ const WELL_DEPTH = 3
 const WELL_WALL_WIDTH = 1
 const PIECE_DEPTH = 0.5
 const FALLING_SPEED = 3
+const FALLING_ACCELERATED_SPEED = 25
+
+const INPUT_MOVES_PER_SECOND = 12
 
 const ANIMATION_ROTATE_TIME = 0.1
 const ANIMATION_MOVE_TIME = 0.1
@@ -88,7 +91,12 @@ function game() {
         speed: FALLING_SPEED,
     })
 
-    setupControlInputs(well)
+    setupControlInputs({
+        well,
+        initialSpeed: FALLING_SPEED,
+        acceleratedSpeed: FALLING_ACCELERATED_SPEED,
+        movesPerSecond: INPUT_MOVES_PER_SECOND,
+    })
 
     scene.run((delta) => {
         well.advance(delta)

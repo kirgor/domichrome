@@ -27,17 +27,13 @@ class Scene {
 
         const clock = new THREE.Clock()
 
-        const loop = () => {
+        rafLoop(() => {
             const delta = clock.getDelta()
             const elapsed = clock.getElapsedTime()
 
             beforeRender(delta, elapsed)
             this.sceneObjects.forEach(obj => obj._beforeRender(delta, elapsed))
             this.renderer.render(this.scene, this.camera)
-
-            requestAnimationFrame(loop)
-        }
-
-        requestAnimationFrame(loop)
+        })
     }
 }

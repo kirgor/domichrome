@@ -58,6 +58,10 @@ class Well {
     }
 
     setBlock(x, y, color = null) {
+        if (x < 0 || x >= this._width || y < 0 || y >= this._height) {
+            return
+        }
+
         const oldBlock = this.getBlock(x, y)
         if (oldBlock) {
             this._callbacks.onBlockDisappear({x, y, color: oldBlock})
@@ -96,13 +100,13 @@ class Well {
         }
     }
 
-    accelerate(a) {
-        this._fallingPiece.speed += a
+    setSpeed(speed) {
+        this._fallingPiece.speed = speed
     }
 
     move(right) {
         if (!this._fallingPiece) {
-            return
+            return false
         }
 
         const fp = this._fallingPiece
@@ -126,17 +130,18 @@ class Well {
             let color = this.getBlock(scanX, y)
             if (color) {
                 this._callbacks.onFallingPieceMoveRejected({...this._fallingPiece, right, color})
-                return
+                return false
             }
         }
 
         this._fallingPiece.x = this._fallingPiece.x + (right ? 1 : -1)
         this._callbacks.onFallingPieceMoveSuccess({...this._fallingPiece, right})
+        return true
     }
 
     rotate(clockwise = true) {
         if (!this._fallingPiece) {
-            return
+            return false
         }
 
         const fp = this._fallingPiece
@@ -173,13 +178,14 @@ class Well {
                 const color = this.getBlock(x, y)
                 if (color) {
                     this._callbacks.onFallingPieceRotateRejected({...this._fallingPiece, clockwise, color})
-                    return
+                    return false
                 }
             }
         }
 
         this._fallingPiece.rotation = (this._fallingPiece.rotation + (clockwise ? 1 : -1) + 4) % 4
         this._callbacks.onFallingPieceRotateSuccess({...this._fallingPiece, clockwise})
+        return true
     }
 
     advance(time) {
