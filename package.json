@@ -1,0 +1,11 @@
+{
+  "name": "domichrome",
+  "version": "1.0.0",
+  "description": "Domichrome - a colorful puzzle game",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kirgor/domichrome.git"
+  },
+  "author": "Kirill Gorobets",
+  "license": "ISC"
+}
