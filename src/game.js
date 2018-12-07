@@ -9,7 +9,7 @@ const PIECE_LIGHT_DISTANCE = 10
 const WELL_DEPTH = 3
 const WELL_WALL_WIDTH = 1
 const PIECE_DEPTH = 0.5
-const FALLING_SPEED = 0
+const FALLING_SPEED = 3
 
 const ANIMATION_ROTATE_TIME = 0.1
 const ANIMATION_MOVE_TIME = 0.1
@@ -24,6 +24,7 @@ function game() {
 
     const fallingPieceSceneObject = new FallingPieceSceneObject()
     const cameraLight = new SimpleSceneObject(new THREE.PointLight(0xffffff, CAMERA_LIGHT_INTENSITY))
+    const blockSceneObjects = {}
     // const particleSystem = new ParticleSystemSceneObject()
 
     scene.add(cameraLight)
@@ -46,10 +47,14 @@ function game() {
             cameraLight.getObject3D().position.copy(cameraPosition)
         },
         onBlockAppear({x, y, color}) {
-
+            const block = new BlockSceneObject(x, y, color)
+            scene.add(block)
+            blockSceneObjects[`${x}.${y}`] = block
         },
         onBlockDisappear({x, y}) {
-
+            const key = `${x}.${y}`
+            scene.remove(blockSceneObjects[key])
+            delete blockSceneObjects[key]
         },
         onFallingPieceAppear({x, y, rotation, color1, color2}) {
             fallingPieceSceneObject.updatePosition(x, y)
@@ -80,11 +85,12 @@ function game() {
     })
 
     well.startFallingPiece({
-        color1: BlockColor.RED,
-        color2: BlockColor.BLUE,
-        rotation: PieceRotation.RIGHT,
         speed: FALLING_SPEED,
     })
+
+    well.setBlock(6, 6, BlockColor.BLUE)
+    well.setBlock(6, 7, BlockColor.RED)
+    well.setBlock(6, 8, BlockColor.YELLOW)
 
     setupControlInputs(well)
 

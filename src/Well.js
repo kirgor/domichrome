@@ -45,7 +45,7 @@ class Well {
 
     getBlock(x, y) {
         // Blocks to the side or below are filled with BOUNDARY
-        if (x < 0 || x >= this._width || y > this._height) {
+        if (x < 0 || x >= this._width || y >= this._height) {
             return BlockColor.BOUNDARY
         }
 
@@ -70,17 +70,30 @@ class Well {
     }
 
     startFallingPiece({
-        color1,
-        color2,
-        rotation = PieceRotation.RIGHT,
+        color1 = Math.floor(Math.random() * 3) + 1,
+        color2 = Math.floor(Math.random() * 3) + 1,
         speed = 0,
     }) {
         if (this._fallingPiece) {
             this._callbacks.onFallingPieceDisappear()
         }
 
-        this._fallingPiece = {x: this._width / 2, y: 0, color1, color2, rotation, speed}
+        const x = Math.floor(this._width / 2)
+        const y = 0
+        if (this.getBlock(x, y) || this.getBlock(x + 1, y)) {
+            this.clear()
+        }
+
+        this._fallingPiece = {x, y, color1, color2, rotation: PieceRotation.RIGHT, speed}
         this._callbacks.onFallingPieceAppear({...this._fallingPiece})
+    }
+
+    clear() {
+        for (let x = 0; x < this._width; x++) {
+            for (let y = 0; y < this._height; y++) {
+                this.setBlock(x, y, null)
+            }
+        }
     }
 
     accelerate(a) {
@@ -92,24 +105,32 @@ class Well {
             return
         }
 
-        const rp = this._roundedFallingPiece()
-        const inc = right ? 1 : -1
+        const fp = this._fallingPiece
 
-        let min = 0
-        let max = this._width - 1
-        if (rp.rotation === PieceRotation.RIGHT) {
-            max--
-        } else if (rp.rotation === PieceRotation.LEFT) {
-            min++
-        }
-
-        const x = this._fallingPiece.x + inc
-        if (x >= min && x <= max) {
-            this._fallingPiece.x = x
-            this._callbacks.onFallingPieceMoveSuccess({...this._fallingPiece, right})
+        let scanX = fp.x
+        if (right) {
+            scanX += fp.rotation === PieceRotation.RIGHT ? 2 : 1
         } else {
-            this._callbacks.onFallingPieceMoveRejected({...this._fallingPiece, right})
+            scanX -= fp.rotation === PieceRotation.LEFT ? 2 : 1
         }
+        let scanStartY = Math.floor(fp.y)
+        if (fp.rotation === PieceRotation.UP) {
+            scanStartY--
+        }
+        let scanStopY = Math.ceil(fp.y)
+        if (fp.rotation === PieceRotation.DOWN) {
+            scanStopY++
+        }
+
+        for (let y = scanStartY; y <= scanStopY; y++) {
+            if (this.getBlock(scanX, y)) {
+                this._callbacks.onFallingPieceMoveRejected({...this._fallingPiece, right})
+                return
+            }
+        }
+
+        this._fallingPiece.x = this._fallingPiece.x + (right ? 1 : -1)
+        this._callbacks.onFallingPieceMoveSuccess({...this._fallingPiece, right})
     }
 
     rotate(clockwise = true) {
@@ -167,9 +188,48 @@ class Well {
             this._onWellAppearCalled = true
         }
 
-        if (this._fallingPiece) {
-            this._fallingPiece.y += this._fallingPiece.speed * time
-            this._callbacks.onFallingPieceFall({...this._fallingPiece})
+        const fp = this._fallingPiece
+        if (fp) {
+            const targetY = fp.y + fp.speed * time
+
+            let scanStartY = Math.floor(fp.y)
+            let scanStopY = Math.ceil(targetY)
+            if (fp.rotation === PieceRotation.DOWN) {
+                scanStartY++
+                scanStopY++
+            }
+            let scanStartX = fp.x
+            if (fp.rotation === PieceRotation.LEFT) {
+                scanStartX--
+            }
+            let scanStopX = fp.x
+            if (fp.rotation === PieceRotation.RIGHT) {
+                scanStopX++
+            }
+
+            for (let x = scanStartX; x <= scanStopX; x++) {
+                for (let y = scanStartY; y <= scanStopY; y++) {
+                    if (this.getBlock(x, y)) {
+                        const dy1 = fp.rotation === PieceRotation.DOWN ? -2 : -1
+                        const dx2 = fp.rotation === PieceRotation.LEFT ?
+                            -1 : fp.rotation === PieceRotation.RIGHT ? 1 : 0
+                        const dy2 = fp.rotation === PieceRotation.UP ?
+                            -1 : fp.rotation === PieceRotation.DOWN ? 1 : 0
+
+                        this.setBlock(fp.x, y + dy1, fp.color1)
+                        this.setBlock(fp.x + dx2, y + dy1 + dy2, fp.color2)
+
+                        this.startFallingPiece({
+                            speed: fp.speed,
+                        })
+
+                        return
+                    }
+                }
+            }
+
+            fp.y = targetY
+            this._callbacks.onFallingPieceFall({...fp})
         }
     }
 
