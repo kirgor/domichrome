@@ -1,4 +1,4 @@
-class FallingPieceSceneObject extends SceneObject {
+class FallingPiece extends GameObject3D {
     constructor() {
         super()
 
@@ -56,10 +56,8 @@ class FallingPieceSceneObject extends SceneObject {
         }
 
         this.shakeAA = createShakeAnimationAction(this.mixer, ANIMATION_SHAKE_TIME, ANIMATION_SHAKE_STEPS, ANIMATION_SHAKE_MAGNITUDE)
-    }
 
-    getObject3D() {
-        return this.outerGroup
+        this.object3d = this.outerGroup
     }
 
     updatePosition(x, y) {

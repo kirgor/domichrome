@@ -1,4 +1,4 @@
-class ParticleSystemSceneObject extends SceneObject {
+class ParticleSystem extends GameObject3D {
     constructor(x, y, z) {
         super()
 
@@ -17,10 +17,8 @@ class ParticleSystemSceneObject extends SceneObject {
             size: 3,
             sizeRandomness: 1,
         }
-    }
 
-    getObject3D() {
-        return this.particleSystem
+        this.object3d = this.particleSystem
     }
 
     _beforeRender(delta, elapsed) {

@@ -1,4 +1,4 @@
-class WellSceneObject extends SceneObject {
+class WellSceneObject extends GameObject3D {
     constructor(width, height) {
         super()
 
@@ -37,17 +37,13 @@ class WellSceneObject extends SceneObject {
         this.mesh4.position.y = (-height - WELL_WALL_WIDTH) / 2
         this.mesh4.position.z = WELL_DEPTH / 2
 
-        this.group = new THREE.Group()
-        this.group.add(this.mesh1)
-        this.group.add(this.mesh2)
-        this.group.add(this.mesh3)
-        this.group.add(this.mesh4)
+        this.object3d = new THREE.Group()
+        this.object3d.add(this.mesh1)
+        this.object3d.add(this.mesh2)
+        this.object3d.add(this.mesh3)
+        this.object3d.add(this.mesh4)
 
-        this.group.position.x = width / 2
-        this.group.position.y = -height / 2
-    }
-
-    getObject3D() {
-        return this.group
+        this.object3d.position.x = width / 2
+        this.object3d.position.y = -height / 2
     }
 }

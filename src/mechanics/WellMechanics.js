@@ -1,7 +1,8 @@
-class Well {
+class WellMechanics extends GameChild {
     constructor({
         width = 10,
         height = 50,
+        tolerance = 0.15,
         onWellAppear,
         onBlockAppear,
         onBlockDisappear,
@@ -13,8 +14,11 @@ class Well {
         onFallingPieceRotateSuccess,
         onFallingPieceRotateRejected,
     }) {
+        super()
+
         this._width = width
         this._height = height
+        this._tolerance = tolerance
         this._callbacks = {
             onWellAppear,
             onBlockAppear,
@@ -121,7 +125,7 @@ class Well {
         if (fp.rotation === PieceRotation.UP) {
             scanStartY--
         }
-        let scanStopY = Math.ceil(fp.y)
+        let scanStopY = Math.ceil(fp.y - this._tolerance * 2)
         if (fp.rotation === PieceRotation.DOWN) {
             scanStopY++
         }
@@ -188,7 +192,7 @@ class Well {
         return true
     }
 
-    advance(time) {
+    _beforeRender(delta) {
         if (!this._onWellAppearCalled) {
             this._callbacks.onWellAppear({
                 width: this._width,
@@ -199,10 +203,10 @@ class Well {
 
         const fp = this._fallingPiece
         if (fp) {
-            const targetY = fp.y + fp.speed * time
+            const targetY = fp.y + fp.speed * delta
 
             let scanStartY = Math.floor(fp.y)
-            let scanStopY = Math.ceil(targetY)
+            let scanStopY = Math.ceil(targetY - this._tolerance)
             if (fp.rotation === PieceRotation.DOWN) {
                 scanStartY++
                 scanStopY++
